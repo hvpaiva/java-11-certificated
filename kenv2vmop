@@ -1,0 +1,66 @@
+#! /bin/bash
+print_help() {
+    echo "kenv2vmop: Translates a K8s values yaml file to IntelliJ VM Options and copy to clipboard."
+    echo ""
+    echo "Dependencies:"
+    echo "  yq: https://github.com/kislyuk/yq (don't mistake by https://github.com/mikefarah/yq)"
+    echo ""
+    echo "Usage:"
+    echo "  kenv2vmop [-f <k8s values yaml file>] [-c <cluster acronym>]"
+    echo ""
+    echo "Example:"
+    echo "  kenv2vmop -f "'"$PWD/src/main/kubernetes/values.yaml"'" -c inv"
+    echo ""
+    echo "Optional arguments:"
+    echo "  -h   Show this help message and exit."
+    echo "  -f   Microservice K8s values yaml file. Default is ./src/main/kubernetes/values.yaml."
+    echo "  -c   Cluster acronym. Default is inv."
+}
+while getopts ":c:f:h" opt; do
+  case ${opt} in
+    h )
+      print_help
+      exit
+      ;;
+    f )
+      values_file=$OPTARG
+      ;;
+    c )
+      cluster=$OPTARG
+      ;;
+    \? )
+      echo "Invalid option: $OPTARG" 1>&2
+      echo ""
+      echo "Help:"
+      print_help
+      exit 1
+      ;;
+    : )
+      echo "Invalid option: $OPTARG requires an argument" 1>&2
+      echo ""
+      echo "Help:"
+      print_help
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND -1))
+values_file="${values_file:-$PWD/src/main/kubernetes/values.yaml}"
+cluster="${cluster:-inv}"
+[ -f "$values_file" ] &&
+(
+    uuid=$(uuidgen)
+    yq -r \
+        '.env[] | (select(.name == "RUN_VARIABLES") | .value | gsub("\\s"; "'"$uuid"'")), (select(.name != "RUN_VARIABLES") | "-D" + .name + "=" + (.value | tostring | if contains(" ") then "\"" + . + "\"" else . end))' \
+        "$values_file" |
+    awk '{ gsub(/'"$uuid"'/, "\n"); print }' |
+    awk '
+{
+    if ( /http:\/\/v[[:digit:]]{1,2}-[^\/]+/ )
+        gsub(/http:\/\/[^\/]*/, "https://api.inv.uatesb.local")
+    print
+}' |
+    pbcopy
+    echo "Output copied to clipboard"
+) ||
+echo "File $values_file not found"
