@@ -17,7 +17,7 @@ jobs:
           repository_name: 'hvpaiva/java-11-certificated'
           user_name: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          image_version: '0.0.1'
+          image_version: '0.0.2'
           docker_file: '.'
     - name: Get pre step result output image_pull_url
       run: echo "The time was ${{ steps.buildAndPushImage.outputs.image_pull_url }}"
