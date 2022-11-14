@@ -14,7 +14,7 @@ jobs:
       uses: Abhishek-070/Dockerhub-Build-Push@v1.0
       with:
           registry_url: 'docker.io'
-          repository_name: 'java-11-certificated'
+          repository_name: 'hvpaiva/java-11-certificated'
           user_name: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           image_version: '0.0.1'
