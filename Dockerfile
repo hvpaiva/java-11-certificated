@@ -1,8 +1,9 @@
 FROM openjdk:11.0.16-jdk
 
-WORKDIR /usr/src/certificates
+WORKDIR /usr/src/app
 
-COPY ./certificates .
+COPY ./certificates ./certificates
+COPY kenv2vmop .
 
 RUN $JAVA_HOME/bin/keytool -import -alias Root -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -file ./SSSS-Root-Certificate-Authority.cer -storepass changeit -noprompt
 
